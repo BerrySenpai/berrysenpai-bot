@@ -1,14 +1,13 @@
-!pip install python-telegram-bot==20.6 aiohttp aiofiles pyunpack patool --quiet
-
-import asyncio, random, string, aiofiles, aiohttp, os, zipfile, shutil
+import os
+import asyncio, random, string, aiofiles, aiohttp, shutil
 from pyunpack import Archive
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
 
 # ==== CONFIGURATION ====
-BOT_TOKEN = "8372763325:AAGQ-ZoOFkSjV1GEokqj4_B9YNMyPWph1g8"  # ⚠️ Replace with your token
-CHANNEL_ID = -1002822805641
-ADMIN_ID = 8293366242
+BOT_TOKEN = os.getenv("BOT_TOKEN")  # Loaded from Choreo environment
+CHANNEL_ID = int(os.getenv("CHANNEL_ID", "0"))
+ADMIN_ID = int(os.getenv("ADMIN_ID", "0"))
 
 file_store = {}
 
@@ -142,7 +141,7 @@ async def zipextract(update: Update, context: ContextTypes.DEFAULT_TYPE):
             for file_name in files:
                 file_path = os.path.join(root, file_name)
                 if os.path.getsize(file_path) > 2 * 1024 * 1024 * 1024:
-                    continue  # skip >2GB
+                    continue
                 sent = await context.bot.send_document(
                     chat_id=CHANNEL_ID,
                     document=open(file_path, "rb"),
@@ -169,7 +168,7 @@ app.add_handler(CommandHandler("url", url_upload))
 app.add_handler(CommandHandler("zipextract", zipextract))
 app.add_handler(MessageHandler(filters.Document.ALL | filters.VIDEO | filters.PHOTO, handle_upload))
 
-print("🚀 Bot is running... (press stop to end)")
+print("🚀 Bot is running...")
 
 async def run_bot():
     await app.initialize()
